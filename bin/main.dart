@@ -1,22 +1,46 @@
 import 'dart:io';
 
+import 'package:dotenv/dotenv.dart';
+import 'package:televerse/televerse.dart';
 import 'package:webdriver/sync_io.dart';
+import 'my_session.dart';
+
+final env = DotEnv(includePlatformEnvironment: true)..load();
+final bot = Bot<MySession>(env["BOT_TG_TOKEN"]!);
 
 void main(List<String> args) {
-  final driver = createDriver(
-      uri: Uri.parse('http://localhost:9515'),
-      spec: WebDriverSpec.Auto,
-      desired: Capabilities.firefox);
-  // Открытие веб-страницы
-  driver.get('https://www.chsu.ru/raspisanie/cache/student.json');
+  try {
+    bot.initSession((id) {
+      return Session.loadFromFile<MySession>((json) => MySession.fromJson(json),
+              id: id) ??
+          MySession();
+    });
 
-  // Ожидание для примера (необязательно)
-  sleep(Duration(seconds: 5));
+    bot.command('setGroup', (ctx) {
+      ctx.reply('Напиши код группы!');
+    });
 
-  // Получение заголовка страницы
-  final title = driver.title;
-  print('Title: $title');
+    bot.command('getSchedule', (ctx) {
+      ctx.reply('Твое расписание!');
+    });
 
-  driver.quit();
-  print('s');
+    bot.command('count', (ctx) {
+      final sess = ctx.session as MySession;
+
+      ctx.reply((ctx.session).toString());
+      // ctx.reply((++sess.count).toString());
+      sess.saveToFile();
+    });
+
+    bot.start((ctx) async {
+      ctx.react("🎉", isBig: true);
+      // ctx.myMethod()
+    });
+
+    print('good Main');
+  } catch (e) {
+    print(e);
+  } finally {
+    // driver.quit();
+  }
 }
