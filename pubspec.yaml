@@ -1,0 +1,25 @@
+name: chsu_alert_tgbot
+description: A sample command-line application.
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.2.4
+
+# Add regular dependencies here.
+dependencies:
+  build_runner: ^2.4.8
+  cookie_jar: ^4.0.8
+  dio: ^5.4.0
+  dio_cookie_manager: ^3.1.1
+  dotenv: ^4.2.0
+  http: ^1.2.0
+  json_annotation: ^4.8.1
+  json_serializable: ^6.7.1
+  televerse: ^1.12.7
+  webdriver: ^3.0.3
+  # path: ^1.8.0
+
+dev_dependencies:
+  lints: ^2.1.0
+  test: ^1.24.0
