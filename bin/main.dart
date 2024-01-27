@@ -35,9 +35,8 @@ void main(List<String> args) {
       while (true) {
         var usersIncomingMessage =
             await conversation.waitForTextMessage(chatId: ctx.id);
-
-        sess.groupCode = await University.getGroupCode(
-            usersIncomingMessage.message.text!, driver);
+        sess.groupName = usersIncomingMessage.message.text ?? '-';
+        sess.groupCode = await University.getGroupCode(sess.groupName!, driver);
 
         if (sess.groupCode != null) {
           sess.saveToFile();
@@ -53,11 +52,16 @@ void main(List<String> args) {
     });
 
     // command
-    bot.command('schedule', (ctx) async {
+    bot.command('getSchedule', (ctx) async {
       final sess = ctx.session as MySession;
+      if (sess.groupCode == null) {
+        ctx.reply(MessageTemplate.getScheduleError(),
+            parseMode: ParseMode.html);
+        return;
+      }
       ctx.reply(
           MessageTemplate.getSchedule(
-              (await University.getScheduleGroup(sess.groupCode!, driver))!),
+              (await University.getScheduleGroup(sess.groupCode!, driver))),
           parseMode: ParseMode.html);
     });
 
