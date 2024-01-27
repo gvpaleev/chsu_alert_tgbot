@@ -3,41 +3,70 @@ import 'dart:io';
 import 'package:dotenv/dotenv.dart';
 import 'package:televerse/televerse.dart';
 import 'package:webdriver/sync_io.dart';
+import 'message_template.dart';
 import 'my_session.dart';
+import 'university.dart';
 
-final env = DotEnv(includePlatformEnvironment: true)..load();
-final bot = Bot<MySession>(env["BOT_TG_TOKEN"]!);
+final DotEnv env = DotEnv(includePlatformEnvironment: true)..load();
+final Televerse bot = Bot<MySession>(env["BOT_TG_TOKEN"]!);
+final Conversation conversation = Conversation(bot);
 
 void main(List<String> args) {
+  //install Selenium
+  final WebDriver driver = createDriver(
+      uri: Uri.parse(env['WEBDRIVE_URL'] ?? ''),
+      spec: WebDriverSpec.Auto,
+      desired: Capabilities.firefox);
+
   try {
+    //install Session
     bot.initSession((id) {
       return Session.loadFromFile<MySession>((json) => MySession.fromJson(json),
               id: id) ??
           MySession();
     });
 
-    bot.command('setGroup', (ctx) {
-      ctx.reply('Напиши код группы!');
-    });
-
-    bot.command('getSchedule', (ctx) {
-      ctx.reply('Твое расписание!');
-    });
-
-    bot.command('count', (ctx) {
+    // command
+    bot.command('setGroup', (ctx) async {
       final sess = ctx.session as MySession;
 
-      ctx.reply((ctx.session).toString());
-      // ctx.reply((++sess.count).toString());
-      sess.saveToFile();
+      await ctx.reply(MessageTemplate.setGroup(), parseMode: ParseMode.html);
+
+      while (true) {
+        var usersIncomingMessage =
+            await conversation.waitForTextMessage(chatId: ctx.id);
+
+        sess.groupCode = await University.getGroupCode(
+            usersIncomingMessage.message.text!, driver);
+
+        if (sess.groupCode != null) {
+          sess.saveToFile();
+
+          ctx.reply(MessageTemplate.setGroupSuccessfully(),
+              parseMode: ParseMode.html);
+
+          break;
+        }
+        ctx.reply(MessageTemplate.setGroupUnsuccessful(),
+            parseMode: ParseMode.html);
+      }
+    });
+
+    // command
+    bot.command('schedule', (ctx) async {
+      final sess = ctx.session as MySession;
+      ctx.reply(
+          MessageTemplate.getSchedule(
+              (await University.getScheduleGroup(sess.groupCode!, driver))!),
+          parseMode: ParseMode.html);
     });
 
     bot.start((ctx) async {
       ctx.react("🎉", isBig: true);
-      // ctx.myMethod()
+      ctx.reply(MessageTemplate.wellcome(), parseMode: ParseMode.html);
     });
 
-    print('good Main');
+    print('the program is running');
   } catch (e) {
     print(e);
   } finally {
