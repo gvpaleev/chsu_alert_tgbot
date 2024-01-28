@@ -16,7 +16,18 @@ void main(List<String> args) {
   final WebDriver driver = createDriver(
       uri: Uri.parse(env['WEBDRIVE_URL'] ?? ''),
       spec: WebDriverSpec.Auto,
-      desired: Capabilities.firefox);
+      desired: {
+        'browserName': 'firefox',
+        "moz:firefoxOptions": {
+          "args": ["--headless", "--no-sandbox", "--disable-dev-shm-usage"]
+        }
+      });
+
+// {
+//         "moz:firefoxOptions": {
+//           "args": ["--headless", "--no-sandbox", "--disable-dev-shm-usage"]
+//         }
+//       }
 
   try {
     //install Session
