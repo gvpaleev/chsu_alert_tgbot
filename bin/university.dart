@@ -28,7 +28,8 @@ abstract class University {
   static Future<List<dynamic>> getScheduleGroup(
       String groupCode, WebDriver driver,
       {int time = 15}) async {
-    String date = '05.02.${DateTime.now().year}';
+    String date =
+        '${DateTime.now().day.toString().padLeft(2, '0')}.${DateTime.now().month.toString().padLeft(2, '0')}.${DateTime.now().year}';
     //${DateTime.now().day.toString().padLeft(2, '0')}.${DateTime.now().month.toString().padLeft(2, '0')}
     String url = env['LESSONS_CHSU_URL']!.replaceAll(
         'BASE64',
@@ -38,13 +39,17 @@ abstract class University {
     await _clickElementByXpath(
         "//a[@id='rawdata-tab'][text()='Raw Data']", driver);
 
-    String data = await _getDataElementByXpath("//pre[@class='data']", driver);
-    var lessons = jsonDecode(data)[0][1][0][2];
-    var lessonsList = (lessons.map((elem) =>
-        '${elem[0]};${elem[1]}.${elem[2]};${elem[4]};${elem[6][0]}'
-            .toString())).toList().map((e) => e.toString()).toList();
-    print('object');
-    return lessonsList.map((e) => e.toString()).toList();
+    List<dynamic> data = jsonDecode(
+        await _getDataElementByXpath("//pre[@class='data']", driver));
+    if (data.isNotEmpty) {
+      var lessons = data![0][1][0][2];
+      var lessonsList = (lessons.map((elem) =>
+          '${elem[0]};${elem[1]}.${elem[2]};${elem[4]};${elem[6][0]}'
+              .toString())).toList().map((e) => e.toString()).toList();
+      print('object');
+      return lessonsList.map((e) => e.toString()).toList();
+    }
+    return <dynamic>[];
   }
 
   static _clickElementByXpath(String xPath, WebDriver driver,
