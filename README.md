@@ -1,2 +1,10 @@
-A sample command-line application with an entrypoint in `bin/`, library code
-in `lib/`, and example unit test in `test/`.
+# Телеграмм бот
+## Предоставляет удобный интерфейс для мониторинга расписания занятий.
+
+[Bot tg](https://t.me/alertChusScheduleBot)
+
+*Стек:* 
+- Dart
+- Selenium
+- Televerse
+- Docker
